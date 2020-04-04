@@ -44,23 +44,14 @@ class tinyNextion {
     String _data = "";
     size_t _index = 0;
     size_t _length = 0;
-    size_t _map;
     SoftwareSerial *_serial;
     uint8_t _signal = NEXTION_SERIAL_CYCLES;
 
   private:
-    struct nextionCallback {
-      nextionCallback *next;
-      nextionEvent event;
-      nextionOnEvent pointer;
-    };
-
-    nextionCallback *_callbacks;
     nextionOnTouch _onTouch;
     nextionOnEvent _onEvent;
 
     uint32_t baud();
-    nextionCallback *callback(nextionEvent event, nextionOnEvent pointer);
     bool connect();
     void flush();
     uint8_t read();
@@ -71,7 +62,6 @@ class tinyNextion {
   public:
     tinyNextion(uint8_t rx, uint8_t tx);
     uint32_t begin(uint32_t speed = 0);
-    void attach(nextionEvent event, nextionOnEvent pointer);
     uint8_t backlight(uint8_t value);
     String get(String data);
     int16_t listen();

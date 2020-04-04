@@ -10,17 +10,6 @@ uint32_t tinyNextion::begin(uint32_t speed) {
   return rate;
 }
 
-void tinyNextion::attach(nextionEvent event, nextionOnEvent pointer) {
-  if (_callbacks) {
-    nextionCallback *item = _callbacks;
-    do if ((item->event.page == event.page) && (item->event.id == event.id) && (item->event.state == event.state)) {
-        item->pointer = pointer;
-        return;
-      } while (item->next && (item = item->next));
-    item->next = callback(event, pointer);
-  } else _callbacks = callback(event, pointer);
-}
-
 uint8_t tinyNextion::backlight(uint8_t value) {
   return print("dim=" + String(value));
 }
@@ -33,14 +22,6 @@ uint32_t tinyNextion::baud() {
   while (!connect() && (7 > ++index));
 
   return map[index] * 2400UL;
-}
-
-tinyNextion::nextionCallback *tinyNextion::callback(nextionEvent event, nextionOnEvent pointer) {
-  nextionCallback *item = new nextionCallback;
-  item->next = NULL;
-  item->pointer = pointer;
-  item->event = event;
-  return item;
 }
 
 bool tinyNextion::connect() {
@@ -90,17 +71,8 @@ int16_t tinyNextion::listen() {
           if (_onTouch) _onTouch((uint16_t(_buffer[1]) << 8) | uint8_t(_buffer[2]), (uint16_t(_buffer[3]) << 8) | uint8_t(_buffer[4]), _buffer[5]);
           break;
 
-        case NEXTION_CMD_TOUCH_EVENT: {
+        case NEXTION_CMD_TOUCH_EVENT:
           if (_onEvent) _onEvent(_buffer[1], _buffer[2], _buffer[3]);
-            nextionCallback *item = _callbacks;
-            while (item) {
-              if ((item->event.page == _buffer[1]) && (item->event.id == _buffer[2]) && (item->event.state == _buffer[3]) && (item->pointer)) {
-                item->pointer(_buffer[1], _buffer[2], _buffer[3]);
-                break;
-              }
-              item = item->next;
-            }
-          }
           break;
 
         case NEXTION_CMD_AUTO_ENTER_SLEEP:
